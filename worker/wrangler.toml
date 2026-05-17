@@ -1,0 +1,8 @@
+name = "castalia-ephemeris-api"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[routes]]
+pattern = "ephemeris.castalia.institute/api/*"
+zone_name = "castalia.institute"

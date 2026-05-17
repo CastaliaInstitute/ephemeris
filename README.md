@@ -36,9 +36,27 @@ Cloudflare zone **castalia.institute**:
 
 GitHub Pages reads `public/CNAME` (`ephemeris.castalia.institute`). After DNS propagates, enable HTTPS in repo Pages settings (certificate may take a few minutes).
 
-## API shape (draft)
+## HTTP API (devices)
 
-The demo exports JSON aligned with Astrolabe `PmEphemBody` bodies (Sun–Saturn):
+Swiss Ephemeris positions for firmware and tools:
+
+```http
+GET https://ephemeris.castalia.institute/api/v1/positions?epoch=1715860800
+```
+
+`epoch` — Unix seconds (UTC). Response cached ~60s at the edge.
+
+Deploy the Cloudflare Worker (route `ephemeris.castalia.institute/api/*`):
+
+```bash
+cd worker && npm install && npm run deploy
+```
+
+Requires Cloudflare API token with Workers + DNS for zone `castalia.institute` (see Castalia `castalia.institute/.env`).
+
+## JSON shape
+
+Aligned with Astrolabe `PmEphemBody` bodies (Sun–Saturn):
 
 ```json
 {
