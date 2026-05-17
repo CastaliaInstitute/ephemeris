@@ -1,0 +1,88 @@
+/**
+ * Static bright-star catalog for GitHub Pages (J2000 RA/Dec, V magnitude).
+ * Same class of data Stellarium uses (Hipparcos / Yale Bright Star Catalog style);
+ * no Stellarium binary runs in CI — output is a small JSON file for watches.
+ */
+import { writeFile, mkdir } from "node:fs/promises";
+import { join } from "node:path";
+
+/** Stars brighter than ~2.5 mag (subset suitable for round watch display). */
+const STARS = [
+  { id: "Sirius", ra: 101.287, dec: -16.716, mag: -1.46 },
+  { id: "Canopus", ra: 95.988, dec: -52.696, mag: -0.74 },
+  { id: "Arcturus", ra: 213.915, dec: 19.182, mag: -0.05 },
+  { id: "Vega", ra: 279.235, dec: 38.784, mag: 0.03 },
+  { id: "Capella", ra: 79.172, dec: 45.998, mag: 0.08 },
+  { id: "Rigel", ra: 78.634, dec: -8.202, mag: 0.13 },
+  { id: "Procyon", ra: 114.825, dec: 5.225, mag: 0.34 },
+  { id: "Betelgeuse", ra: 88.793, dec: 7.407, mag: 0.42 },
+  { id: "Achernar", ra: 24.428, dec: -57.237, mag: 0.46 },
+  { id: "Hadar", ra: 210.956, dec: -60.373, mag: 0.61 },
+  { id: "Altair", ra: 297.695, dec: 8.868, mag: 0.76 },
+  { id: "Acrux", ra: 186.65, dec: -63.099, mag: 0.76 },
+  { id: "Aldebaran", ra: 68.98, dec: 16.509, mag: 0.85 },
+  { id: "Antares", ra: 247.352, dec: -26.432, mag: 0.96 },
+  { id: "Spica", ra: 201.298, dec: -11.161, mag: 0.97 },
+  { id: "Pollux", ra: 116.329, dec: 28.026, mag: 1.14 },
+  { id: "Fomalhaut", ra: 344.413, dec: -29.622, mag: 1.16 },
+  { id: "Deneb", ra: 310.358, dec: 45.28, mag: 1.25 },
+  { id: "Regulus", ra: 152.093, dec: 11.967, mag: 1.35 },
+  { id: "Adhara", ra: 104.656, dec: -28.972, mag: 1.5 },
+  { id: "Castor", ra: 113.649, dec: 31.888, mag: 1.57 },
+  { id: "Bellatrix", ra: 81.283, dec: 6.35, mag: 1.64 },
+  { id: "Elnath", ra: 81.573, dec: 28.607, mag: 1.65 },
+  { id: "Miaplacidus", ra: 138.3, dec: -69.717, mag: 1.67 },
+  { id: "Alnilam", ra: 84.053, dec: -1.202, mag: 1.69 },
+  { id: "Alnitak", ra: 85.19, dec: -1.943, mag: 1.74 },
+  { id: "Alnair", ra: 331.446, dec: -46.961, mag: 1.73 },
+  { id: "Alioth", ra: 193.507, dec: 55.96, mag: 1.76 },
+  { id: "Mirfak", ra: 51.081, dec: 49.861, mag: 1.79 },
+  { id: "Dubhe", ra: 165.932, dec: 61.751, mag: 1.81 },
+  { id: "Wezen", ra: 111.024, dec: -26.393, mag: 1.83 },
+  { id: "Alkaid", ra: 206.885, dec: 49.313, mag: 1.85 },
+  { id: "Sargas", ra: 264.395, dec: -42.998, mag: 1.86 },
+  { id: "Avior", ra: 125.628, dec: -59.509, mag: 1.86 },
+  { id: "Menkalinan", ra: 89.882, dec: 44.947, mag: 1.9 },
+  { id: "Atria", ra: 252.166, dec: -69.028, mag: 1.91 },
+  { id: "Alhena", ra: 99.428, dec: 16.399, mag: 1.93 },
+  { id: "Peacock", ra: 306.412, dec: -56.735, mag: 1.94 },
+  { id: "Mirzam", ra: 95.675, dec: -17.956, mag: 1.98 },
+  { id: "Alphard", ra: 141.897, dec: -8.659, mag: 1.99 },
+  { id: "Polaris", ra: 37.954, dec: 89.264, mag: 1.98 },
+  { id: "Hamal", ra: 31.793, dec: 23.462, mag: 2.01 },
+  { id: "Algieba", ra: 154.993, dec: 19.842, mag: 2.08 },
+  { id: "Diphda", ra: 10.897, dec: -17.987, mag: 2.04 },
+  { id: "Mizar", ra: 200.981, dec: 54.925, mag: 2.23 },
+  { id: "Schedar", ra: 24.733, dec: 56.537, mag: 2.24 },
+  { id: "Denebola", ra: 177.265, dec: 14.572, mag: 2.14 },
+  { id: "Merak", ra: 165.46, dec: 56.382, mag: 2.34 },
+  { id: "Phecda", ra: 178.457, dec: 53.695, mag: 2.41 },
+  { id: "Almach", ra: 30.974, dec: 42.33, mag: 2.1 },
+  { id: "Saiph", ra: 86.939, dec: -9.67, mag: 2.07 },
+  { id: "Kochab", ra: 222.676, dec: 74.155, mag: 2.07 },
+  { id: "Gacrux", ra: 187.791, dec: -57.113, mag: 2.06 },
+  { id: "Izar", ra: 221.247, dec: 27.074, mag: 2.35 },
+  { id: "Unukalhai", ra: 216.49, dec: 6.425, mag: 2.63 },
+];
+
+const seen = new Set();
+const stars = STARS.filter((s) => {
+  if (seen.has(s.id)) return false;
+  seen.add(s.id);
+  return s.mag <= 2.5;
+}).sort((a, b) => a.mag - b.mag);
+
+const payload = {
+  version: 1,
+  epoch: "J2000",
+  source: "castalia-static-catalog",
+  note: "Stellarium-compatible J2000 bright stars; not served by a live Stellarium process",
+  count: stars.length,
+  stars,
+};
+
+const outDir = join(process.cwd(), "public", "data", "stars");
+await mkdir(outDir, { recursive: true });
+const path = join(outDir, "bright-stars.json");
+await writeFile(path, JSON.stringify(payload));
+console.log(path, stars.length, "stars");

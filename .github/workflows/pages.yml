@@ -24,7 +24,7 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci
-      - run: npm run generate-data
+      - run: npm run generate
       - run: vite build
       - uses: actions/upload-pages-artifact@v3
         with:

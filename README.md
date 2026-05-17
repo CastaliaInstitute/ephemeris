@@ -10,7 +10,9 @@ Swiss Ephemeris for Castalia devices and the browser — **static GitHub Pages o
 |-------|------|---------|
 | Browser demo (WASM) | `/` | Humans — live Swiss Ephemeris in the tab |
 | **Precomputed planets** | `/data/ephem/YYYY-MM.json` | Astrolabe / PocketMynah astrology face |
-| **Bright star catalog** | `/data/stars/bright-stars.json` | Reference (firmware embeds the same list) |
+| **Bright star catalog** | `/data/stars/bright-stars.json` | Celestial face (WiFi fetch + embedded fallback) |
+
+Stars are **static J2000 data** (Stellarium-compatible catalog style). There is no live Stellarium server — see [`stellarium/README.md`](stellarium/README.md).
 
 Planet files hold **geocentric tropical ecliptic longitudes** (Sun–Saturn) every **15 minutes**, generated with `swisseph-wasm` in CI.
 

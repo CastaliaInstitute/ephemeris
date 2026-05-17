@@ -6,8 +6,10 @@
   "description": "Castalia Swiss Ephemeris browser demo (GitHub Pages)",
   "scripts": {
     "dev": "vite",
+    "generate-stars": "node scripts/generate-stars-catalog.mjs",
     "generate-data": "node scripts/generate-ephem-data.mjs",
-    "build": "npm run generate-data && vite build",
+    "generate": "npm run generate-stars && npm run generate-data",
+    "build": "npm run generate && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
