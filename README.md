@@ -1,82 +1,58 @@
 # Castalia Ephemeris
 
-Browser demo and reference client for **Swiss Ephemeris** calculations, built for Castalia devices (e.g. [Astrolabe](https://github.com/CastaliaInstitute/astrolabe)) and future edge APIs.
+Swiss Ephemeris for Castalia devices and the browser — **static GitHub Pages only** (no Cloudflare Worker).
 
-**Live site:** https://ephemeris.castalia.institute/ (also https://castaliainstitute.github.io/ephemeris/)
+**Live site:** https://ephemeris.castalia.institute/
 
-## Stack
+## What ships here
 
-- [Vite](https://vitejs.dev/) static site
-- [swisseph-wasm](https://github.com/prolaxu/swisseph-wasm) — Swiss Ephemeris compiled to WebAssembly
-- GitHub Actions → GitHub Pages
+| Asset | Path | Used by |
+|-------|------|---------|
+| Browser demo (WASM) | `/` | Humans — live Swiss Ephemeris in the tab |
+| **Precomputed planets** | `/data/ephem/YYYY-MM.json` | Astrolabe / PocketMynah astrology face |
+| **Bright star catalog** | `/data/stars/bright-stars.json` | Reference (firmware embeds the same list) |
 
-## Local development
+Planet files hold **geocentric tropical ecliptic longitudes** (Sun–Saturn) every **15 minutes**, generated with `swisseph-wasm` in CI.
+
+## Regenerate data
 
 ```bash
 npm install
-npm run dev
+npm run generate-data   # writes public/data/ephem/*.json
+npm run build           # generate-data + Vite → dist/
 ```
 
-Open http://localhost:5173/
+GitHub Actions runs `generate-data` before each Pages deploy.
 
-Production build:
-
-```bash
-npm run build
-npm run preview
-```
-
-## DNS
-
-Cloudflare zone **castalia.institute**:
-
-| Type  | Name       | Content                      | Proxy   |
-|-------|------------|------------------------------|---------|
-| CNAME | `ephemeris` | `castaliainstitute.github.io` | DNS only |
-
-GitHub Pages reads `public/CNAME` (`ephemeris.castalia.institute`). After DNS propagates, enable HTTPS in repo Pages settings (certificate may take a few minutes).
-
-## HTTP API (devices)
-
-Swiss Ephemeris positions for firmware and tools:
-
-```http
-GET https://ephemeris.castalia.institute/api/v1/positions?epoch=1715860800
-```
-
-`epoch` — Unix seconds (UTC). Response cached ~60s at the edge.
-
-Deploy the Cloudflare Worker (route `ephemeris.castalia.institute/api/*`):
-
-```bash
-cd worker && npm install && npm run deploy
-```
-
-Requires Cloudflare API token with Workers + DNS for zone `castalia.institute` (see Castalia `castalia.institute/.env`).
-
-## JSON shape
-
-Aligned with Astrolabe `PmEphemBody` bodies (Sun–Saturn):
+## Device JSON shape (monthly file)
 
 ```json
 {
+  "step": 900,
+  "t0": 1746057600,
+  "t1": 1748736000,
   "source": "swisseph-wasm",
   "coordinate": "tropical-ecliptic",
-  "epoch": "2026-05-16T12:00:00.000Z",
   "bodies": {
-    "sun": { "lon": 55.12, "speed": 0.98, "sign": "Taurus" },
-    "moon": { "lon": 123.45, "speed": 13.2, "sign": "Leo" }
+    "sun": [55.12, 55.25, "..."],
+    "moon": ["..."]
   }
 }
 ```
 
-A future **Castalia ephemeris server** can mirror this contract over HTTPS (JWT, caching) while firmware falls back to simplified `pm_transit` math when offline.
+Firmware: `GET https://ephemeris.castalia.institute/data/ephem/2026-05.json`, index by `(epoch - t0) / step`, fall back to local `pm_transit` if offline.
+
+Configure base URL in astrolabe `MYNAH_EPHEMERIS_DATA_BASE` (`pm_config.h`).
+
+## DNS
+
+CNAME `ephemeris` → `castaliainstitute.github.io` (DNS only on Cloudflare). `public/CNAME` sets the custom host for Pages.
 
 ## Licensing
 
-- This repository: **GPL-3.0-or-later** (see [LICENSE](LICENSE)).
-- **Swiss Ephemeris**: GPL for open-source / non-commercial use; [commercial license](https://www.astro.com/swisseph/) from Astrodienst AG required for closed-source or commercial products.
+- This repository: **GPL-3.0-or-later**
+- **Swiss Ephemeris**: GPL for open source; [commercial license](https://www.astro.com/swisseph/) from Astrodienst for proprietary products
 
 ## Related
 
-- [astrolabe](https://github.com/CastaliaInstitute/astrolabe) — on-device approximations in `pm_transit.cpp`; backlog item for Castalia ephemeris service integration.
+- [astrolabe](https://github.com/CastaliaInstitute/astrolabe) — `pm_ephemeris` (static fetch), `pm_stars` + **Celestial** clock face

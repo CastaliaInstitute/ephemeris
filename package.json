@@ -6,7 +6,8 @@
   "description": "Castalia Swiss Ephemeris browser demo (GitHub Pages)",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "generate-data": "node scripts/generate-ephem-data.mjs",
+    "build": "npm run generate-data && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
