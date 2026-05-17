@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview --base /ephemeris/"
+    "preview": "vite preview"
   },
   "dependencies": {
     "swisseph-wasm": "^0.0.5"

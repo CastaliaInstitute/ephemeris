@@ -2,7 +2,7 @@
 
 Browser demo and reference client for **Swiss Ephemeris** calculations, built for Castalia devices (e.g. [Astrolabe](https://github.com/CastaliaInstitute/astrolabe)) and future edge APIs.
 
-**Live site:** https://castaliainstitute.github.io/ephemeris/
+**Live site:** https://ephemeris.castalia.institute/ (also https://castaliainstitute.github.io/ephemeris/)
 
 ## Stack
 
@@ -19,12 +19,22 @@ npm run dev
 
 Open http://localhost:5173/
 
-Production build (served under `/ephemeris/` on Pages):
+Production build:
 
 ```bash
 npm run build
 npm run preview
 ```
+
+## DNS
+
+Cloudflare zone **castalia.institute**:
+
+| Type  | Name       | Content                      | Proxy   |
+|-------|------------|------------------------------|---------|
+| CNAME | `ephemeris` | `castaliainstitute.github.io` | DNS only |
+
+GitHub Pages reads `public/CNAME` (`ephemeris.castalia.institute`). After DNS propagates, enable HTTPS in repo Pages settings (certificate may take a few minutes).
 
 ## API shape (draft)
 

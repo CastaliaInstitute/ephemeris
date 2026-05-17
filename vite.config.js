@@ -1,10 +1,10 @@
 import { defineConfig } from "vite";
 
-/** Project site: https://castaliainstitute.github.io/ephemeris/ */
-export default defineConfig(({ command }) => ({
-  base: command === "serve" ? "/" : "/ephemeris/",
+/** Custom domain (root) + project Pages subpath via relative assets. */
+export default defineConfig({
+  base: "./",
   assetsInclude: ["**/*.wasm"],
   optimizeDeps: {
     exclude: ["swisseph-wasm"],
   },
-}));
+});
