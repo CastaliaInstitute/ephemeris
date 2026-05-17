@@ -1,0 +1,18 @@
+{
+  "name": "@castalia/ephemeris",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Castalia Swiss Ephemeris browser demo (GitHub Pages)",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --base /ephemeris/"
+  },
+  "dependencies": {
+    "swisseph-wasm": "^0.0.5"
+  },
+  "devDependencies": {
+    "vite": "^6.3.5"
+  }
+}
