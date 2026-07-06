@@ -8,6 +8,7 @@
     "dev": "vite",
     "generate-stars": "node scripts/generate-stars-catalog.mjs",
     "generate-data": "node scripts/generate-ephem-data.mjs",
+    "generate-human-design": "node scripts/generate-ephem-data.mjs --only-human-design",
     "generate": "npm run generate-stars && npm run generate-data",
     "build": "npm run generate && vite build",
     "preview": "vite preview"
