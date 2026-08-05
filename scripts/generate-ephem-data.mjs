@@ -5,6 +5,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import SwissEph from "swisseph-wasm";
+import { calcUtAudited, runtimeProvenance } from "./swisseph-runtime.mjs";
 
 const ASTROLABE_BODIES = [
   { id: "sun", swe: "SE_SUN" },
@@ -111,8 +112,8 @@ function calcBodySeries(swe, flag, bodies, t0, t1) {
       ut,
     );
     for (const body of bodies) {
-      const raw = swe.calc_ut(jd, swe[body.swe], flag);
-      const lon = norm360(raw[0]);
+      const { values } = calcUtAudited(swe, jd, swe[body.swe], flag);
+      const lon = norm360(values[0]);
       bodySeries[body.id].push(Math.round(lon * 10000) / 10000);
     }
   }
@@ -124,6 +125,7 @@ async function main() {
   const swe = new SwissEph();
   await swe.initSwissEph();
   const flag = swe.SEFLG_SWIEPH;
+  const provenance = await runtimeProvenance(swe);
 
   const outDir = join(process.cwd(), "public", "data", "ephem");
   const hdOutDir = join(process.cwd(), "public", "data", "human-design");
@@ -149,10 +151,10 @@ async function main() {
       const key = monthKey(cur);
       months.push(key);
       const payload = {
+        ...provenance,
         step: STEP_SEC,
         t0,
         t1,
-        source: "swisseph-wasm",
         coordinate: "tropical-ecliptic",
         bodies: bodySeries,
       };
@@ -174,11 +176,11 @@ async function main() {
       const key = dayKey(cur);
       hdDays.push(key);
       const payload = {
+        ...provenance,
         version: 1,
         step: STEP_SEC,
         t0,
         t1,
-        source: "swisseph-wasm",
         coordinate: "tropical-ecliptic",
         purpose: "human-design-local-cache",
         bodies: bodySeries,

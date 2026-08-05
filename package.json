@@ -10,6 +10,7 @@
     "generate-data": "node scripts/generate-ephem-data.mjs",
     "generate-human-design": "node scripts/generate-ephem-data.mjs --only-human-design",
     "generate": "npm run generate-stars && npm run generate-data",
+    "test": "node --test scripts/test-swisseph-runtime.mjs",
     "build": "npm run generate && vite build",
     "preview": "vite preview"
   },
